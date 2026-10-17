@@ -1,0 +1,79 @@
+{
+  "adminler": {
+    "7118735097": {
+      "rol": "kurucu",
+      "kullanici_adi": "Kurucu",
+      "eklenme_tarihi": "18.10.2026 01:54",
+      "ekleyen": "Sistem"
+    },
+    "8780868373": {
+      "rol": "onayci",
+      "kullanici_adi": "MOMO:V2",
+      "eklenme_tarihi": "18.10.2026 01:54",
+      "ekleyen": "𝐆𝐇:𝐌𝐎𝐌𝐎 (7118735097)"
+    }
+  },
+  "kanallar": [
+    {
+      "id": "-1003742082840",
+      "ad": "LOG KANAL",
+      "username": null
+    }
+  ],
+  "bekleyen": {
+    "ec6c9d023d63": {
+      "gonderen_id": 7118735097,
+      "kaynak_mesaj_id": 246,
+      "durum": "reddedildi",
+      "gonderen_ad": "𝐆𝐇:𝐌𝐎𝐌𝐎"
+    },
+    "0123d363a4e4": {
+      "gonderen_id": 7118735097,
+      "kaynak_mesaj_id": 253,
+      "durum": "onaylandi",
+      "gonderen_ad": "𝐆𝐇:𝐌𝐎𝐌𝐎"
+    },
+    "89350a298c33": {
+      "gonderen_id": 7118735097,
+      "kaynak_mesaj_id": 283,
+      "durum": "onaylandi",
+      "gonderen_ad": "𝐆𝐇:𝐌𝐎𝐌𝐎"
+    },
+    "cb0872371358": {
+      "gonderen_id": 7118735097,
+      "kaynak_mesaj_id": 288,
+      "durum": "onaylandi",
+      "gonderen_ad": "𝐆𝐇:𝐌𝐎𝐌𝐎"
+    },
+    "4e6720e38ccc": {
+      "gonderen_id": 7118735097,
+      "kaynak_mesaj_id": 301,
+      "durum": "onaylandi",
+      "gonderen_ad": "𝐆𝐇:𝐌𝐎𝐌𝐎"
+    },
+    "2d0152c32993": {
+      "gonderen_id": 8780868373,
+      "kaynak_mesaj_id": 310,
+      "durum": "onaylandi",
+      "gonderen_ad": "MOMO:V2"
+    },
+    "47ae7f0a61c2": {
+      "gonderen_id": 7118735097,
+      "kaynak_mesaj_id": 356,
+      "durum": "reddedildi",
+      "gonderen_ad": "𝐆𝐇:𝐌𝐎𝐌𝐎"
+    },
+    "8e8a3105591e": {
+      "gonderen_id": 8780868373,
+      "kaynak_mesaj_id": 364,
+      "durum": "bekliyor",
+      "gonderen_ad": "MOMO:V2"
+    },
+    "4f9e2b42a0e4": {
+      "gonderen_id": 8481540022,
+      "kaynak_mesaj_id": 368,
+      "durum": "reddedildi",
+      "gonderen_ad": "hαnımєfєndí"
+    }
+  }
+}
