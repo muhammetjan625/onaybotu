@@ -3,7 +3,11 @@ import random
 import json
 import uuid
 import logging
+import threading
+import time
+import requests
 from datetime import datetime
+from flask import Flask
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
 
@@ -16,20 +20,49 @@ logging.basicConfig(
 )
 
 # =========================
-# AYARLAR
+# FLASK & KEEPALIVE (RENDER UYKU ENGELLEME)
+# =========================
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Bot 7/24 Aktif ve Çalışıyor!", 200
+
+def run_flask():
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
+
+def keep_alive_ping():
+    """Render üzerindeki web servisini her 10 dakikada bir tetikleyerek uykuyu engeller."""
+    time.sleep(15)
+    render_url = os.getenv("RENDER_EXTERNAL_URL")
+    while True:
+        try:
+            if render_url:
+                requests.get(render_url)
+                logging.info(f"Ping gönderildi: {render_url}")
+            else:
+                logging.info("RENDER_EXTERNAL_URL tanımlı değil, kendi kendini pingleme beklemede.")
+        except Exception as e:
+            logging.error(f"Ping hatası: {e}")
+        time.sleep(600)  # 10 dakikada bir tetikle
+
+# Flask web sunucusunu ayrı bir thread'de başlat
+threading.Thread(target=run_flask, daemon=True).start()
+threading.Thread(target=keep_alive_ping, daemon=True).start()
+
+# =========================
+# AYARLAR & TELEBOT
 # =========================
 TOKEN = os.getenv("BOT_TOKEN")
 SAHIP_ID = 8780868373
 DOSYA = "bot_verileri.json"
 
 if not TOKEN:
-    raise RuntimeError(
-        "BOT_TOKEN bulunamadı. Lütfen bot token'ını ortam değişkeni olarak tanımlayın."
-    )
+    raise RuntimeError("BOT_TOKEN bulunamadı. Lütfen ortama tanımlayın.")
 
 bot = telebot.TeleBot(TOKEN)
 
-# Geçici durum sözlükleri
 red_asamasindakiler = {}
 destek_modundakiler = set()
 
@@ -118,9 +151,6 @@ def kurucu_mu(user_id):
     return yetki_kontrol(user_id) == "kurucu"
 
 
-# =========================
-# TELEGRAM MENÜ KOMUTLARI
-# =========================
 def komutlari_ayarla():
     try:
         komutlar = [
@@ -130,12 +160,12 @@ def komutlari_ayarla():
             BotCommand("panel", "Kurucu kontrol paneli (Kurucu)"),
             BotCommand("adminler", "Yönetici listesi ve liderlik tablosu"),
             BotCommand("kanallar", "Kayıtlı kanalları listele"),
-            BotCommand("kanalekle", "Yeni kanal ekle (Kurucu)"),
-            BotCommand("kanalsil", "Kanalı kaldır (Kurucu)"),
-            BotCommand("adminekle", "Onaycı admin ekle (Kurucu)"),
-            BotCommand("admincikar", "Yönetici yetkisini al (Kurucu)"),
-            BotCommand("engelle", "Kullanıcıyı engelle (Kurucu)"),
-            BotCommand("engelkaldir", "Kullanıcı engelini kaldır (Kurucu)")
+            BotCommand("kanalekle", "Yeni kanal ekler (Kurucu)"),
+            BotCommand("kanalsil", "Kanalı kaldırır (Kurucu)"),
+            BotCommand("adminekle", "Onaycı admin ekler (Kurucu)"),
+            BotCommand("admincikar", "Yönetici yetkisini alır (Kurucu)"),
+            BotCommand("engelle", "Kullanıcıyı engeller (Kurucu)"),
+            BotCommand("engelkaldir", "Kullanıcı engelini kaldırır (Kurucu)")
         ]
         bot.set_my_commands(komutlar)
         logging.info("Telegram / menü komutları otomatik tanımlandı.")
@@ -144,11 +174,10 @@ def komutlari_ayarla():
 
 
 # =========================
-# TEMEL KOMUTLAR
+# BOT HANDLERLARI
 # =========================
 @bot.message_handler(commands=["start"])
 def start(message):
-    logging.info(f"Kullanıcı /start kullandı: {message.from_user.id}")
     bot.reply_to(
         message,
         "👋 **Merhaba!**\n\nBana metin, fotoğraf, video veya belge gönder.\n"
@@ -196,9 +225,6 @@ def yardim(message):
     bot.reply_to(message, metin, parse_mode="Markdown")
 
 
-# =========================
-# DESTEK / GERİ BİLDİRİM SİSTEMİ
-# =========================
 @bot.message_handler(commands=["destek"])
 def destek_baslat(message):
     user_id = message.from_user.id
@@ -213,9 +239,6 @@ def destek_baslat(message):
     )
 
 
-# =========================
-# KURUCU ÖZEL PANEL
-# =========================
 @bot.message_handler(commands=["panel"])
 def kurucu_paneli(message):
     if not kurucu_mu(message.from_user.id):
@@ -267,9 +290,6 @@ def panel_butonlari(call):
         bot.answer_callback_query(call.id, "✅ Panel güncellendi.")
 
 
-# =========================
-# ADMIN LİSTESİ & LİDERLİK TABLOSU
-# =========================
 @bot.message_handler(commands=["adminler"])
 def adminleri_listele(message):
     if not yetki_kontrol(message.from_user.id):
@@ -290,9 +310,6 @@ def adminleri_listele(message):
     bot.reply_to(message, metin, parse_mode="Markdown")
 
 
-# =========================
-# BAN / KARA LİSTE SİSTEMİ
-# =========================
 @bot.message_handler(commands=["engelle"])
 def kullanici_engelle(message):
     if not kurucu_mu(message.from_user.id):
@@ -330,9 +347,6 @@ def engel_kaldir(message):
         bot.reply_to(message, "Kullanım: /engelkaldir 123456789")
 
 
-# =========================
-# KANAL VE ADMİN YÖNETİMİ
-# =========================
 @bot.message_handler(commands=["kanalekle"])
 def kanal_ekle(message):
     if not kurucu_mu(message.from_user.id):
@@ -362,7 +376,6 @@ def kanal_ekle(message):
 @bot.message_handler(commands=["kanalsil"])
 def kanal_sil(message):
     if not kurucu_mu(message.from_user.id):
-        bot.reply_to(message, "⛔ Kurucuya açıktır.")
         return
     try:
         hedef = message.text.split(maxsplit=1)[1].strip()
@@ -396,7 +409,6 @@ def kanallari_goster(message):
 @bot.message_handler(commands=["adminekle"])
 def admin_ekle(message):
     if not kurucu_mu(message.from_user.id):
-        bot.reply_to(message, "⛔ Yalnızca kurucu.")
         return
     try:
         yeni_id = int(message.text.split()[1])
@@ -440,9 +452,6 @@ def admin_cikar(message):
         bot.reply_to(message, "Kullanım: /admincikar ID")
 
 
-# =========================
-# KULLANICI MESAJ / GÖNDERİ ALIMI
-# =========================
 @bot.message_handler(content_types=["text", "photo", "video", "document", "audio"])
 def mesaj_al(message):
     user_id = message.from_user.id
@@ -452,7 +461,6 @@ def mesaj_al(message):
         bot.reply_to(message, "⛔ Botu kullanma yetkiniz engellenmiştir.")
         return
 
-    # Destek modu kontrolü
     if user_id in destek_modundakiler:
         destek_modundakiler.remove(user_id)
         ad = message.from_user.first_name or "Kullanıcı"
@@ -465,7 +473,6 @@ def mesaj_al(message):
         bot.reply_to(message, "✅ Destek mesajınız yöneticilere iletildi. En kısa sürede dönüş yapılacaktır.")
         return
 
-    # Red sebebi yazma kontrolü
     if user_id_str in red_asamasindakiler:
         basvuru_id = red_asamasindakiler.pop(user_id_str)
         sebep = message.text
@@ -520,9 +527,6 @@ def mesaj_al(message):
     bot.reply_to(message, "⏳ Mesajınız yönetici onayına gönderildi.")
 
 
-# =========================
-# ONAY / RED & OTOMATİK İMZA SİSTEMİ
-# =========================
 @bot.callback_query_handler(func=lambda call: call.data.startswith("onay_") or call.data.startswith("red_"))
 def buton_islemi(call):
     admin_id_str = str(call.from_user.id)
@@ -550,7 +554,6 @@ def buton_islemi(call):
             pass
         return
 
-    # ONAY İŞLEMİ & OTOMATİK İMZA
     basvuru["durum"] = "isleniyor"
     adminler[admin_id_str]["onay_sayisi"] = adminler[admin_id_str].get("onay_sayisi", 0) + 1
     kaydet()
@@ -558,7 +561,6 @@ def buton_islemi(call):
     gonderen_id = basvuru["gonderen_id"]
     kaynak_mesaj_id = basvuru["kaynak_mesaj_id"]
     gonderen_ad = basvuru["gonderen_ad"]
-    gonderen_bilgi = basvuru["gonderen_bilgi"]
 
     try:
         stiller_havuzu = [
@@ -578,18 +580,14 @@ def buton_islemi(call):
         basarili = []
         for kanal in list(kanallar):
             try:
-                # Önce içeriği kopyala
                 bot.copy_message(
                     chat_id=kanal["id"],
                     from_chat_id=gonderen_id,
                     message_id=kaynak_mesaj_id,
                     reply_markup=kanal_markup
                 )
-                
-                # Ardından otomatik imza/etiket mesajı gönder
                 imza_metni = f"✍️ *Gönderen:* [{gonderen_ad}](tg://user?id={gonderen_id})"
                 bot.send_message(kanal["id"], imza_metni, parse_mode="Markdown")
-                
                 basarili.append(kanal["ad"])
             except Exception as e:
                 logging.error(f"Kanal gönderim hatası ({kanal['id']}): {e}")
@@ -621,7 +619,6 @@ def buton_islemi(call):
         bot.answer_callback_query(call.id, "Bir hata oluştu.", show_alert=True)
 
 
-# Komutları yükle ve botu çalıştır
 komutlari_ayarla()
-logging.info("🚀 Kapsamlı Telegram Kanal Yönetim Botu çalışıyor!")
+logging.info("🚀 Bot başarıyla başlatıldı!")
 bot.infinity_polling(skip_pending=False)
