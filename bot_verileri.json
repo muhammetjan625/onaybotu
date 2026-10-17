@@ -4,13 +4,17 @@
       "rol": "kurucu",
       "kullanici_adi": "Kurucu",
       "eklenme_tarihi": "18.10.2026 01:54",
-      "ekleyen": "Sistem"
+      "ekleyen": "Sistem",
+      "onay_sayisi": 0,
+      "red_sayisi": 0
     },
     "8780868373": {
-      "rol": "onayci",
-      "kullanici_adi": "MOMO:V2",
+      "rol": "kurucu",
+      "kullanici_adi": "Kurucu",
       "eklenme_tarihi": "18.10.2026 01:54",
-      "ekleyen": "𝐆𝐇:𝐌𝐎𝐌𝐎 (7118735097)"
+      "ekleyen": "Sistem",
+      "onay_sayisi": 0,
+      "red_sayisi": 0
     }
   },
   "kanallar": [
@@ -74,6 +78,21 @@
       "kaynak_mesaj_id": 368,
       "durum": "reddedildi",
       "gonderen_ad": "hαnımєfєndí"
+    },
+    "e59f9263f743": {
+      "gonderen_id": 7118735097,
+      "kaynak_mesaj_id": 376,
+      "durum": "bekliyor",
+      "gonderen_ad": "𝐆𝐇:𝐌𝐎𝐌𝐎",
+      "gonderen_bilgi": "@eniyisininiyisiyim"
+    },
+    "4264122d18c1": {
+      "gonderen_id": 7118735097,
+      "kaynak_mesaj_id": 380,
+      "durum": "bekliyor",
+      "gonderen_ad": "𝐆𝐇:𝐌𝐎𝐌𝐎",
+      "gonderen_bilgi": "@eniyisininiyisiyim"
     }
-  }
+  },
+  "engellenenler": []
 }
